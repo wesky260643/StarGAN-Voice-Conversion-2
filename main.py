@@ -48,9 +48,12 @@ if __name__ == '__main__':
     # TODO: duplicate across modules, possible add to existing class or create new one
     dataset_using_possibilities = ['VCTK', 'VCC2016']
 
+    # TODO: add custom speaker list parser option
+    #       NB: currently have to edit speakers in data_loader
+
     # Model configuration.
     parser.add_argument('--dataset_using', type=str, default=dataset_using_possibilities[0], help='VCTK or VCC2016.')
-    parser.add_argument('--num_speakers', type=int, default=10, help='dimension of speaker labels')
+    parser.add_argument('--num_speakers', type=int, default=10, help='dimension of speaker labels (MAX 10)')
     parser.add_argument('--lambda_cls', type=float, default=1, help='weight for domain classification loss')
     parser.add_argument('--lambda_rec', type=float, default=10, help='weight for reconstruction loss')
     parser.add_argument('--lambda_gp', type=float, default=10, help='weight for gradient penalty')
@@ -91,5 +94,9 @@ if __name__ == '__main__':
     parser.add_argument('--lr_update_step', type=int, default=1000)
 
     config = parser.parse_args()
-    print(config)
-    main(config)
+
+    if (config.num_speakers > 10) or (config.num_speakers < 2):
+        print('Too many or too little speakers, try again')
+    else:
+        print(config)
+        main(config)
