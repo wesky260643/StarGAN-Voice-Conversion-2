@@ -406,13 +406,13 @@ if __name__ == '__main__':
                               mode='train',
                               num_workers=1)
     data_iter = iter(train_loader)
-    generator = Generator()
-    discriminator = Discriminator()
+    generator = Generator(num_speakers=4)
+    discriminator = Discriminator(num_speakers=4)
 
     mc_real, spk_label_org, spk_c_org = next(data_iter)
     mc_real.unsqueeze_(1)  # (B, D, T) -> (B, 1, D, T) for conv2d
 
-    num_speakers = 10
+    num_speakers = 4
     spk_c = np.random.randint(0, num_speakers, size=mc_real.size(0))
     spk_c_cat = to_categorical(spk_c, num_speakers)
     spk_label_trg = torch.LongTensor(spk_c)
