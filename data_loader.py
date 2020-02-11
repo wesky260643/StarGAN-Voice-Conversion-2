@@ -17,8 +17,7 @@ class DataSpeakers:
             self.speakers = ['sf1', 'sf2', 'sf3', 'sm1', 'sm2', 'tm1', 'tm2', 'tm3', 'tf1', 'tf2']
         else:
             # TODO: linked with speaker list parser arg todo in main
-            self.speakers = ['p272', 'p272', 'p224', 'p245']
-            # self.speakers = ['p262', 'p272', 'p229', 'p232', 'p292', 'p293', 'p360', 'p361', 'p248', 'p251']
+            self.speakers = ['p262', 'p272', 'p229', 'p232'] #, 'p292', 'p293', 'p360', 'p361', 'p248', 'p251']
 
         self.spk2idx = dict(zip(self.speakers, range(len(self.speakers))))
         self.prefix_length = len(self.speakers[0])
