@@ -164,4 +164,3 @@ if __name__ == '__main__':
         raise RuntimeError("Need at least 2 speakers to convert audio.")
 
     test(config)
-    print('Finished')
