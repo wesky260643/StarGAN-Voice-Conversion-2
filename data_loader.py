@@ -5,7 +5,7 @@ from os.path import join, basename
 import argparse
 import numpy as np
 
-min_length = 256   # Since we slice 256 frames from each utterance when training.
+min_length = 128   # Since we slice 256 frames from each utterance when training.
 
 
 class DataSpeakers:
