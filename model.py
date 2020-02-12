@@ -402,7 +402,7 @@ if __name__ == '__main__':
     # Load data
     train_loader = get_loader(dataset_using=dataset_using,
                               data_dir=train_dir,
-                              batch_size=16,
+                              batch_size=8,
                               mode='train',
                               num_workers=1)
     data_iter = iter(train_loader)
