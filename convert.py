@@ -24,7 +24,7 @@ class TestDataset(object):
         if config.dataset_using == "VCC2016":
             speakers = ['sf1', 'sf2', 'sf3', 'sm1', 'sm2', 'tf1', 'tf2', 'tm1', 'tm2', 'tm3']
         else:
-            speakers = ['p262', 'p272', 'p229', 'p232', 'p292', 'p293', 'p360', 'p361', 'p248', 'p251']
+            speakers = ['p262', 'p272', 'p229', 'p232'] #['p262', 'p272', 'p229', 'p232', 'p292', 'p293', 'p360', 'p361', 'p248', 'p251']
 
         spk2idx = dict(zip(speakers, range(len(speakers))))
 
