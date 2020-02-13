@@ -246,9 +246,6 @@ class Solver(object):
             # =================================================================================== #
             
             if (i+1) % self.n_critic == 0:
-                out_src = self.discriminator(mc_real, spk_c_org, spk_c_trg)
-                g_loss_real = torch.mean(torch.log(out_src))
-
                 # Original-to-target domain.
                 mc_fake = self.generator(mc_real, spk_c_trg)
                 out_src = self.discriminator(mc_fake, spk_c_org, spk_c_trg)
@@ -264,11 +261,11 @@ class Solver(object):
 
                 # Backward and optimize.
                 if (i+1) < 10**4:  # only calc. id mapping loss on first 10^4 iters.
-                    g_loss = g_loss_real + g_loss_fake \
+                    g_loss = g_loss_fake \
                              + self.lambda_rec * g_loss_rec \
                              + self.lambda_id * g_loss_id
                 else:
-                    g_loss = g_loss_real + g_loss_fake + self.lambda_rec * g_loss_rec \
+                    g_loss = + g_loss_fake + self.lambda_rec * g_loss_rec \
 
                 self.reset_grad()
                 g_loss.backward()
