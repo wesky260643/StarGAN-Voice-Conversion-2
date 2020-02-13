@@ -265,7 +265,7 @@ class Solver(object):
                              + self.lambda_rec * g_loss_rec \
                              + self.lambda_id * g_loss_id
                 else:
-                    g_loss = + g_loss_fake + self.lambda_rec * g_loss_rec \
+                    g_loss = g_loss_fake + self.lambda_rec * g_loss_rec \
 
                 self.reset_grad()
                 g_loss.backward()
