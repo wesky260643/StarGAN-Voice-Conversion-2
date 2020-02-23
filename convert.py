@@ -78,7 +78,9 @@ def test(config):
 
                 # Load speakers
                 test_loader = ConvertDataset(config, src_spk=config.speakers[i], trg_spk=config.speakers[j])
+                print('---------------------------------------')
                 print('Source: ', config.speakers[i], ' Target: ', config.speakers[j])
+                print('---------------------------------------')
 
                 # Read a batch of testdata
                 test_wavfiles = test_loader.get_batch_test_data(batch_size=config.num_converted_wavs)
@@ -86,7 +88,7 @@ def test(config):
 
                 with torch.no_grad():
                     for idx, wav in enumerate(test_wavs):
-                        print(len(wav))
+                        print(f'({idx}), file length: {len(wav)}')
                         wav_name = basename(test_wavfiles[idx])
 
                         # convert wav to mceps
