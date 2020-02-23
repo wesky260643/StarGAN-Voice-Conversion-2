@@ -71,9 +71,10 @@ def test(config):
     for i in range(1, len(config.speakers) + 1):
         for j in range(1, len(config.speakers) + 1):
             if i != j:
-                os.mkdir(join(config.convert_dir,
-                              str(config.resume_iters),
-                              f'{config.speakers[i]}_to_{config.speakers[j]}'))
+                os.makedirs(join(config.convert_dir,
+                                 str(config.resume_iters),
+                                 f'{config.speakers[i]}_to_{config.speakers[j]}'),
+                            exist_ok=True)
 
                 # Load speakers
                 test_loader = ConvertDataset(config, src_spk=config.speakers[i], trg_spk=config.speakers[j])
