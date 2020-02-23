@@ -63,7 +63,7 @@ def test(config):
 
     # Restore model
     print(f'Loading the trained models from step {config.resume_iters}...')
-    generator = Generator().to(device)
+    generator = Generator(config.num_speakers).to(device)
     g_path = join(config.model_save_dir, f'{config.resume_iters}-G.ckpt')
     generator.load_state_dict(torch.load(g_path, map_location=lambda storage, loc: storage))
 
@@ -138,11 +138,8 @@ def test(config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    dataset_using_possibilities = ["VCTK", "VCC2016"]
-
     # Model configuration.
-    parser.add_argument('--dataset_using', type=str, default=dataset_using_possibilities[0], help="VCTK or VCC2016.")
-    parser.add_argument('--num_speakers', type=int, default=10, help='Dimension of speaker labels')
+    parser.add_argument('--num_speakers', type=int, default=10, help='Dimension of speaker labels.')
     parser.add_argument('--num_converted_wavs', type=int, default=8, help='Number of wavs to convert.')
     parser.add_argument('--resume_iters', type=int, default=None, help='Step to resume for testing.')
     parser.add_argument('--speakers', type=str, nargs='+', required=True, help='Speakers to be converted.')
