@@ -123,7 +123,8 @@ def test(config):
                                                  sampling_rate)
 
 
-                        # include target speaker
+                        # TODO: include trg speaker rather than src speaker
+                        # include src speaker
                         wav_cpsyn = world_speech_synthesis(f0=f0,
                                                            coded_sp=coded_sp,
                                                            ap=ap,
