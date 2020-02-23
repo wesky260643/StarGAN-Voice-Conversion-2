@@ -131,6 +131,7 @@ def test(config):
                                                            frame_period=frame_period)
                         librosa.output.write_wav(join(config.convert_dir,
                                                       str(config.resume_iters),
+                                                      f'{config.speakers[i]}_to_{config.speakers[j]}',
                                                       f'cpsyn-{wav_name}'),
                                                  wav_cpsyn,
                                                  sampling_rate)
