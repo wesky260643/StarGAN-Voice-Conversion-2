@@ -22,11 +22,11 @@ class ConvertDataset(object):
         self.src_spk = src_spk
         self.trg_spk = trg_spk
 
-        self.mc_files = sorted(glob.glob(join(config.test_data_dir, f'{config.src_spk}*.npy')))
-        self.src_spk_stats = np.load(join(config.train_data_dir, f'{config.src_spk}_stats.npz'))
-        self.src_wav_dir = f'{config.wav_dir}/{config.src_spk}'
+        self.mc_files = sorted(glob.glob(join(config.test_data_dir, f'{self.src_spk}*.npy')))
+        self.src_spk_stats = np.load(join(config.train_data_dir, f'{self.src_spk}_stats.npz'))
+        self.src_wav_dir = f'{config.wav_dir}/{self.src_spk}'
 
-        self.trg_spk_stats = np.load(join(config.train_data_dir, f'{config.trg_spk}_stats.npz'))
+        self.trg_spk_stats = np.load(join(config.train_data_dir, f'{self.trg_spk}_stats.npz'))
 
         self.logf0s_mean_src = self.src_spk_stats['log_f0s_mean']
         self.logf0s_std_src = self.src_spk_stats['log_f0s_std']
@@ -37,7 +37,7 @@ class ConvertDataset(object):
         self.mcep_mean_trg = self.trg_spk_stats['coded_sps_mean']
         self.mcep_std_trg = self.trg_spk_stats['coded_sps_std']
 
-        self.spk_idx = spk2idx[config.trg_spk]
+        self.spk_idx = spk2idx[self.trg_spk]
         spk_cat = to_categorical([self.spk_idx], num_classes=len(speakers))
         self.spk_c_trg = spk_cat
 
