@@ -68,8 +68,8 @@ def test(config):
     generator.load_state_dict(torch.load(g_path, map_location=lambda storage, loc: storage))
 
     # for all possible speaker pairs in config.speakers
-    for i in range(1, len(config.speakers) + 1):
-        for j in range(1, len(config.speakers) + 1):
+    for i in range(0, len(config.speakers)):
+        for j in range(0, len(config.speakers)):
             if i != j:
                 os.makedirs(join(config.convert_dir,
                                  str(config.resume_iters),
