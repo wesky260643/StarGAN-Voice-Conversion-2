@@ -401,7 +401,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Load models
-    generator = Generator().to(device)
+    generator = Generator(num_speakers=num_speakers).to(device)
     discriminator = Discriminator(num_speakers=num_speakers).to(device)
 
     # Load data
