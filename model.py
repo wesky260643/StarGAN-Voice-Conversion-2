@@ -316,11 +316,11 @@ class Discriminator(nn.Module):
 
         # Initial layers.
         self.conv_layer_1 = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=128, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(in_channels=1, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
             nn.GLU(dim=1)
         )
         self.conv_gated_1 = nn.Sequential(
-            nn.Conv2d(in_channels=1, out_channels=128, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(in_channels=1, out_channels=128, kernel_size=(3, 3), stride=(1, 1), padding=1),
             nn.GLU(dim=1)
         )
 
@@ -349,7 +349,7 @@ class Discriminator(nn.Module):
         self.down_sample_4 = DownsampleBlock(dim_in=512,
                                              dim_out=1024,
                                              kernel_size=(1, 5),
-                                             stride=1,
+                                             stride=(1, 1),
                                              padding=(0, 2),
                                              bias=False)
 
