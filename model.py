@@ -395,56 +395,54 @@ class Discriminator(nn.Module):
 
 # Just for testing shapes of architecture, with existing data.
 if __name__ == '__main__':
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    parser = argparse.ArgumentParser(description='Test G and D architecture')
 
-    parser = argparse.ArgumentParser(description='Test G and D architecture with live data')
-
-    dataset_using_default = ['VCTK', 'VCC2016']
-    train_dir_default = '../VCTK-Data/mc/train'
+    train_dir_default = '../data/VCTK-Data/mc/train'
+    speaker_default = 'p229'
 
     # Data config.
-    parser.add_argument('--dataset_using', type=str, default=dataset_using_default[0], help='VCTK or VCC2016')
     parser.add_argument('--train_dir', type=str, default=train_dir_default, help='Train dir path')
+    parser.add_argument('--speakers', type=str, nargs='+', required=True, help='Speaker dir names')
+    num_speakers = 4
 
     argv = parser.parse_args()
-    dataset_using = argv.dataset_using
     train_dir = argv.train_dir
+    speakers_using = argv.speakers
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    # Load models
+    generator = Generator().to(device)
+    discriminator = Discriminator(num_speakers=num_speakers).to(device)
 
     # Load data
-    train_loader = get_loader(dataset_using=dataset_using,
-                              data_dir=train_dir,
-                              batch_size=16,
-                              mode='train',
-                              num_workers=1)
+    train_loader = get_loader(speakers_using, train_dir, 8, 'train', num_workers=1)
     data_iter = iter(train_loader)
-    generator = Generator()
-    discriminator = Discriminator()
 
     mc_real, spk_label_org, spk_c_org = next(data_iter)
     mc_real.unsqueeze_(1)  # (B, D, T) -> (B, 1, D, T) for conv2d
 
-    num_speakers = 10
     spk_c = np.random.randint(0, num_speakers, size=mc_real.size(0))
     spk_c_cat = to_categorical(spk_c, num_speakers)
     spk_label_trg = torch.LongTensor(spk_c)
     spk_c_trg = torch.FloatTensor(spk_c_cat)
 
-    mc_real = mc_real.to(device)              # Input mc.
+    mc_real = mc_real.to(device)  # Input mc.
     spk_label_org = spk_label_org.to(device)  # Original spk labels.
-    spk_c_org = spk_c_org.to(device)          # Original spk acc conditioning.
+    spk_c_org = spk_c_org.to(device)  # Original spk acc conditioning.
     spk_label_trg = spk_label_trg.to(device)  # Target spk labels for classification loss for G.
-    spk_c_trg = spk_c_trg.to(device)          # Target spk conditioning.
+    spk_c_trg = spk_c_trg.to(device)  # Target spk conditioning.
 
-    print('Shape of real input: ')
-    print(mc_real.shape)
-    print('Shape of target output: ')
-    print(spk_c_trg.shape)
+    print('Testing Discriminator')
+    print('-------------------------')
+    print(f'Shape in: {mc_real.shape}')
+    dis_real = discriminator(mc_real, spk_c_org, spk_c_trg)
+    print(f'Shape out: {dis_real.shape}')
+    print('------------------------')
 
+    print('Testing Generator')
+    print('-------------------------')
+    print(f'Shape in: {mc_real.shape}')
     mc_fake = generator(mc_real, spk_c_trg)
-    print('Shape of generated output: ')
-    print(mc_fake.size())
-
-    out_src, out_cls_spks = discriminator(mc_fake.detach(), spk_c_org, spk_c_trg)
-    print('Shape of out_src:')
-    print(out_src.shape)
-    print(out_cls_spks.shape)
+    print(f'Shape out: {mc_fake.shape}')
+    print('------------------------')
