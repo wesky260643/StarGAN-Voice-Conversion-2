@@ -353,14 +353,6 @@ class Discriminator(nn.Module):
                                              padding=(0, 2),
                                              bias=False)
 
-        # TODO: currently how original Star dealt with class loss
-        self.conv_clf_spks = nn.Conv2d(in_channels=512,
-                                       out_channels=num_speakers,
-                                       kernel_size=(3, 16),
-                                       stride=1,
-                                       padding=0,
-                                       bias=False)  # for num_speaker
-
         # Fully connected layer.
         self.fully_connected = nn.Linear(in_features=512, out_features=1)
 
@@ -387,10 +379,7 @@ class Discriminator(nn.Module):
 
         x += torch.sum(p * h, dim=1, keepdim=True)
 
-        # for class loss
-        out_cls_spks = self.conv_clf_spks(x_)
-
-        return x, out_cls_spks.view(out_cls_spks.size(0), out_cls_spks.size(1))
+        return x
 
 
 # Just for testing shapes of architecture, with existing data.
