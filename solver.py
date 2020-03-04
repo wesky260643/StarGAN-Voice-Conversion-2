@@ -215,14 +215,14 @@ class Solver(object):
 
             # Compute loss with real mc feats.
             d_out_src = self.discriminator(mc_real, spk_c_org, spk_c_trg)
-            d_loss_real = F.binary_cross_entropy_with_logits(d_out_src, torch.ones_like(d_out_src, dtype=torch.float))
+            d_loss_real = torch.mean(torch.log(d_out_src))
 
             # Compute loss with fake mc feats.
             mc_fake = self.generator(mc_real, spk_c_trg)
             d_out_fake = self.discriminator(mc_fake.detach(), spk_c_org, spk_c_trg)
-            d_loss_fake = F.binary_cross_entropy_with_logits(d_out_fake, torch.zeros_like(d_out_fake, dtype=torch.float))
+            d_loss_fake = torch.mean(torch.log(d_out_fake))
 
-            d_loss = d_loss_real + d_loss_fake
+            d_loss = -1 * (d_loss_real + d_loss_fake)
 
             # Compute loss for gradient penalty.
             alpha = torch.rand(mc_real.size(0), 1, 1, 1).to(self.device)
@@ -248,8 +248,11 @@ class Solver(object):
             if (i + 1) % self.n_critic == 0:
                 # Original-to-target domain.
                 mc_fake = self.generator(mc_real, spk_c_trg)
-                out_src = self.discriminator(mc_fake, spk_c_org, spk_c_trg)
-                g_loss_fake = -torch.mean(out_src)
+                out_fake = self.discriminator(mc_fake, spk_c_org, spk_c_trg)
+                out_real = self.discriminator(mc_real, spk_c_trg, spk_c_org)
+                g_loss_fake = torch.mean(torch.log(out_fake))
+                g_loss_real = torch.mean(torch.log(out_real))
+                g_loss_s_t = g_loss_fake + g_loss_real
 
                 # Target-to-original domain.
                 mc_reconst = self.generator(mc_fake, spk_c_org)
@@ -261,18 +264,18 @@ class Solver(object):
 
                 # Backward and optimize.
                 if (i + 1) < 10 ** 4:  # only calc. id mapping loss on first 10^4 iters.
-                    g_loss = g_loss_fake \
+                    g_loss = g_loss_s_t \
                              + self.lambda_rec * g_loss_rec \
                              + self.lambda_id * g_loss_id
                 else:
-                    g_loss = g_loss_fake + self.lambda_rec * g_loss_rec \
+                    g_loss = g_loss_s_t + self.lambda_rec * g_loss_rec \
 
                 self.reset_grad()
                 g_loss.backward()
                 self.g_optimizer.step()
 
                 # Logging.
-                loss['G/loss_fake'] = g_loss_fake.item()
+                loss['G/loss_s_t'] = g_loss_fake.item()
                 loss['G/loss_rec'] = g_loss_rec.item()
                 loss['G/loss'] = g_loss.item()
 

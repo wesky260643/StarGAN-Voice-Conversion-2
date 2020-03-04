@@ -18,7 +18,7 @@ class DownsampleBlock(nn.Module):
                       padding=padding,
                       bias=bias),
             nn.InstanceNorm2d(num_features=dim_out, affine=True),
-            nn.ReLU(inplace=True)
+            nn.GLU(dim=1)
         )
 
         self.conv_gated = nn.Sequential(
@@ -29,7 +29,7 @@ class DownsampleBlock(nn.Module):
                       padding=padding,
                       bias=bias),
             nn.InstanceNorm2d(num_features=dim_out, affine=True),
-            nn.ReLU(inplace=True)
+            nn.GLU(dim=1)
         )
 
     def forward(self, x):
@@ -52,7 +52,7 @@ class UpSampleBlock(nn.Module):
                                bias=bias),
             nn.PixelShuffle(2),
             # CustomPixelShuffle(2)
-            nn.ReLU(inplace=True)
+            nn.GLU(dim=1)
         )
 
         self.conv_gated = nn.Sequential(
@@ -64,7 +64,7 @@ class UpSampleBlock(nn.Module):
                                bias=bias),
             nn.PixelShuffle(2),
             # CustomPixelShuffle(2)
-            nn.ReLU(inplace=True)
+            nn.GLU(dim=1)
         )
 
     def forward(self, x):
@@ -115,7 +115,7 @@ class ResidualBlock(nn.Module):
 
         self.cin = ConditionalInstanceNormalisation(dim_in=dim_out, style_num=style_num)
 
-        self.glu = nn.ReLU(inplace=True)
+        self.glu = nn.GLU(dim=1)
 
     def forward(self, x, c_):
         x = self.conv_layer(x)
@@ -147,7 +147,7 @@ class Generator(nn.Module):
                                              padding=(2, 2),
                                              bias=False)
 
-        self.down_sample_2 = DownsampleBlock(dim_in=256,
+        self.down_sample_2 = DownsampleBlock(dim_in=128,
                                              dim_out=512,
                                              kernel_size=(5, 5),
                                              stride=(2, 2),
@@ -158,7 +158,7 @@ class Generator(nn.Module):
 
         # Down-conversion layers.
         self.down_conversion = nn.Sequential(
-            nn.Conv1d(in_channels=4608,
+            nn.Conv1d(in_channels=2304,
                       out_channels=256,
                       kernel_size=1,
                       stride=1,
@@ -169,63 +169,63 @@ class Generator(nn.Module):
 
         # Bottleneck layers.
         self.residual_1 = ResidualBlock(dim_in=256,
-                                        dim_out=256,
+                                        dim_out=512,
                                         kernel_size=5,
                                         stride=1,
                                         padding=2,
                                         style_num=self.num_speakers)
 
         self.residual_2 = ResidualBlock(dim_in=256,
-                                        dim_out=256,
+                                        dim_out=512,
                                         kernel_size=5,
                                         stride=1,
                                         padding=2,
                                         style_num=self.num_speakers)
 
         self.residual_3 = ResidualBlock(dim_in=256,
-                                        dim_out=256,
+                                        dim_out=512,
                                         kernel_size=5,
                                         stride=1,
                                         padding=2,
                                         style_num=self.num_speakers)
 
         self.residual_4 = ResidualBlock(dim_in=256,
-                                        dim_out=256,
+                                        dim_out=512,
                                         kernel_size=5,
                                         stride=1,
                                         padding=2,
                                         style_num=self.num_speakers)
 
         self.residual_5 = ResidualBlock(dim_in=256,
-                                        dim_out=256,
+                                        dim_out=512,
                                         kernel_size=5,
                                         stride=1,
                                         padding=2,
                                         style_num=self.num_speakers)
 
         self.residual_6 = ResidualBlock(dim_in=256,
-                                        dim_out=256,
+                                        dim_out=512,
                                         kernel_size=5,
                                         stride=1,
                                         padding=2,
                                         style_num=self.num_speakers)
 
         self.residual_7 = ResidualBlock(dim_in=256,
-                                        dim_out=256,
+                                        dim_out=512,
                                         kernel_size=5,
                                         stride=1,
                                         padding=2,
                                         style_num=self.num_speakers)
 
         self.residual_8 = ResidualBlock(dim_in=256,
-                                        dim_out=256,
+                                        dim_out=512,
                                         kernel_size=5,
                                         stride=1,
                                         padding=2,
                                         style_num=self.num_speakers)
 
         self.residual_9 = ResidualBlock(dim_in=256,
-                                        dim_out=256,
+                                        dim_out=512,
                                         kernel_size=5,
                                         stride=1,
                                         padding=2,
@@ -249,14 +249,14 @@ class Generator(nn.Module):
                                          padding=2,
                                          bias=False)
 
-        self.up_sample_2 = UpSampleBlock(dim_in=256,
+        self.up_sample_2 = UpSampleBlock(dim_in=128,
                                          dim_out=512,
                                          kernel_size=(5, 5),
                                          stride=(1, 1),
                                          padding=2,
                                          bias=False)
 
-        self.out = nn.Conv2d(in_channels=128,
+        self.out = nn.Conv2d(in_channels=64,
                              out_channels=1,
                              kernel_size=(5, 15),
                              stride=(1, 1),
@@ -279,7 +279,7 @@ class Generator(nn.Module):
         x = self.down_sample_1(x)
         x = self.down_sample_2(x)
 
-        x = x.contiguous().view(8, 4608, width_size // 4)
+        x = x.contiguous().view(8, 2304, width_size // 4)
         x = self.down_conversion(x)
 
         x = self.residual_1(x, c_)
@@ -332,21 +332,21 @@ class Discriminator(nn.Module):
                                              padding=1,
                                              bias=False)
 
-        self.down_sample_2 = DownsampleBlock(dim_in=256,
+        self.down_sample_2 = DownsampleBlock(dim_in=128,
                                              dim_out=512,
                                              kernel_size=(3, 3),
                                              stride=(2, 2),
                                              padding=1,
                                              bias=False)
 
-        self.down_sample_3 = DownsampleBlock(dim_in=512,
+        self.down_sample_3 = DownsampleBlock(dim_in=256,
                                              dim_out=1024,
                                              kernel_size=(3, 3),
                                              stride=(2, 2),
                                              padding=1,
                                              bias=False)
 
-        self.down_sample_4 = DownsampleBlock(dim_in=1024,
+        self.down_sample_4 = DownsampleBlock(dim_in=512,
                                              dim_out=1024,
                                              kernel_size=(1, 5),
                                              stride=(1, 1),
@@ -354,10 +354,10 @@ class Discriminator(nn.Module):
                                              bias=False)
 
         # Fully connected layer.
-        self.fully_connected = nn.Linear(in_features=1024, out_features=1)
+        self.fully_connected = nn.Linear(in_features=512, out_features=1)
 
         # Projection.
-        self.projection = nn.Linear(self.num_speakers * 2, 1024)
+        self.projection = nn.Linear(self.num_speakers * 2, 512)
 
     def forward(self, x, c, c_):
         c_onehot = torch.cat((c, c_), dim=1).to(self.device)
