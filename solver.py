@@ -296,45 +296,45 @@ class Solver(object):
                     for tag, value in loss.items():
                         self.logger.scalar_summary(tag, value, i + 1)
 
-            if (i + 1) % self.sample_step == 0:
-                # TODO: change to parameters
-                sampling_rate = 16000
-                num_mcep = 36
-                frame_period = 5
-                with torch.no_grad():
-                    for idx, wav in tqdm(enumerate(test_wavs)):
-                        wav_name = basename(test_wavfiles[idx])
-                        # print(wav_name)
-                        f0, timeaxis, sp, ap = world_decompose(wav=wav, fs=sampling_rate, frame_period=frame_period)
-                        f0_converted = pitch_conversion(f0=f0,
-                                                        mean_log_src=self.test_loader.logf0s_mean_src,
-                                                        std_log_src=self.test_loader.logf0s_std_src,
-                                                        mean_log_target=self.test_loader.logf0s_mean_trg,
-                                                        std_log_target=self.test_loader.logf0s_std_trg)
-                        coded_sp = world_encode_spectral_envelop(sp=sp, fs=sampling_rate, dim=num_mcep)
-
-                        coded_sp_norm = (coded_sp - self.test_loader.mcep_mean_src) / self.test_loader.mcep_std_src
-                        coded_sp_norm_tensor = torch.FloatTensor(coded_sp_norm.T).unsqueeze_(0).unsqueeze_(1).to(
-                            self.device)
-                        conds = torch.FloatTensor(self.test_loader.spk_c_trg).to(self.device)
-                        # print(conds.size())
-                        coded_sp_converted_norm = self.generator(coded_sp_norm_tensor, conds).data.cpu().numpy()
-                        coded_sp_converted = np.squeeze(
-                            coded_sp_converted_norm).T * self.test_loader.mcep_std_trg + self.test_loader.mcep_mean_trg
-                        coded_sp_converted = np.ascontiguousarray(coded_sp_converted)
-                        # decoded_sp_converted = world_decode_spectral_envelop(coded_sp = coded_sp_converted, fs = sampling_rate)
-                        wav_transformed = world_speech_synthesis(f0=f0_converted, coded_sp=coded_sp_converted,
-                                                                 ap=ap, fs=sampling_rate, frame_period=frame_period)
-
-                        librosa.output.write_wav(
-                            join(self.sample_dir, str(i + 1) + '-' + wav_name.split('.')[0] + '-vcto-{}'.format(
-                                self.test_loader.trg_spk) + '.wav'), wav_transformed, sampling_rate)
-                        if cpsyn_flag:
-                            wav_cpsyn = world_speech_synthesis(f0=f0, coded_sp=coded_sp,
-                                                               ap=ap, fs=sampling_rate, frame_period=frame_period)
-                            librosa.output.write_wav(join(self.sample_dir, 'cpsyn-' + wav_name), wav_cpsyn,
-                                                     sampling_rate)
-                    cpsyn_flag = False
+            # if (i + 1) % self.sample_step == 0:
+            #     # TODO: change to parameters
+            #     sampling_rate = 16000
+            #     num_mcep = 36
+            #     frame_period = 5
+            #     with torch.no_grad():
+            #         for idx, wav in tqdm(enumerate(test_wavs)):
+            #             wav_name = basename(test_wavfiles[idx])
+            #             # print(wav_name)
+            #             f0, timeaxis, sp, ap = world_decompose(wav=wav, fs=sampling_rate, frame_period=frame_period)
+            #             f0_converted = pitch_conversion(f0=f0,
+            #                                             mean_log_src=self.test_loader.logf0s_mean_src,
+            #                                             std_log_src=self.test_loader.logf0s_std_src,
+            #                                             mean_log_target=self.test_loader.logf0s_mean_trg,
+            #                                             std_log_target=self.test_loader.logf0s_std_trg)
+            #             coded_sp = world_encode_spectral_envelop(sp=sp, fs=sampling_rate, dim=num_mcep)
+            #
+            #             coded_sp_norm = (coded_sp - self.test_loader.mcep_mean_src) / self.test_loader.mcep_std_src
+            #             coded_sp_norm_tensor = torch.FloatTensor(coded_sp_norm.T).unsqueeze_(0).unsqueeze_(1).to(
+            #                 self.device)
+            #             conds = torch.FloatTensor(self.test_loader.spk_c_trg).to(self.device)
+            #             # print(conds.size())
+            #             coded_sp_converted_norm = self.generator(coded_sp_norm_tensor, conds).data.cpu().numpy()
+            #             coded_sp_converted = np.squeeze(
+            #                 coded_sp_converted_norm).T * self.test_loader.mcep_std_trg + self.test_loader.mcep_mean_trg
+            #             coded_sp_converted = np.ascontiguousarray(coded_sp_converted)
+            #             # decoded_sp_converted = world_decode_spectral_envelop(coded_sp = coded_sp_converted, fs = sampling_rate)
+            #             wav_transformed = world_speech_synthesis(f0=f0_converted, coded_sp=coded_sp_converted,
+            #                                                      ap=ap, fs=sampling_rate, frame_period=frame_period)
+            #
+            #             librosa.output.write_wav(
+            #                 join(self.sample_dir, str(i + 1) + '-' + wav_name.split('.')[0] + '-vcto-{}'.format(
+            #                     self.test_loader.trg_spk) + '.wav'), wav_transformed, sampling_rate)
+            #             if cpsyn_flag:
+            #                 wav_cpsyn = world_speech_synthesis(f0=f0, coded_sp=coded_sp,
+            #                                                    ap=ap, fs=sampling_rate, frame_period=frame_period)
+            #                 librosa.output.write_wav(join(self.sample_dir, 'cpsyn-' + wav_name), wav_cpsyn,
+            #                                          sampling_rate)
+            #         cpsyn_flag = False
 
             # Save model checkpoints.
             if (i + 1) % self.model_save_step == 0:
