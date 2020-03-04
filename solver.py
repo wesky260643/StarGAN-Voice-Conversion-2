@@ -249,10 +249,7 @@ class Solver(object):
                 # Original-to-target domain.
                 mc_fake = self.generator(mc_real, spk_c_trg)
                 out_fake = self.discriminator(mc_fake, spk_c_org, spk_c_trg)
-                out_real = self.discriminator(mc_real, spk_c_trg, spk_c_org)
-                g_loss_fake = torch.mean(torch.log(out_fake))
-                g_loss_real = torch.mean(torch.log(out_real))
-                g_loss_s_t = g_loss_fake + g_loss_real
+                g_loss_fake = - torch.mean(torch.log(out_fake))
 
                 # Target-to-original domain.
                 mc_reconst = self.generator(mc_fake, spk_c_org)
@@ -264,18 +261,18 @@ class Solver(object):
 
                 # Backward and optimize.
                 if (i + 1) < 10 ** 4:  # only calc. id mapping loss on first 10^4 iters.
-                    g_loss = g_loss_s_t \
+                    g_loss = g_loss_fake \
                              + self.lambda_rec * g_loss_rec \
                              + self.lambda_id * g_loss_id
                 else:
-                    g_loss = g_loss_s_t + self.lambda_rec * g_loss_rec \
+                    g_loss = g_loss_fake + self.lambda_rec * g_loss_rec \
 
                 self.reset_grad()
                 g_loss.backward()
                 self.g_optimizer.step()
 
                 # Logging.
-                loss['G/loss_s_t'] = g_loss_fake.item()
+                loss['G/g_loss_fake'] = g_loss_fake.item()
                 loss['G/loss_rec'] = g_loss_rec.item()
                 loss['G/loss'] = g_loss.item()
 
