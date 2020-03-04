@@ -279,7 +279,7 @@ class Generator(nn.Module):
         x = self.down_sample_1(x)
         x = self.down_sample_2(x)
 
-        x = x.contiguous().view(8, 2304, width_size // 4)
+        x = x.contiguous().view(-1, 2304, width_size // 4)
         x = self.down_conversion(x)
 
         x = self.residual_1(x, c_)
