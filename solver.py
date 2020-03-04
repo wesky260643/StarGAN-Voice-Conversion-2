@@ -231,7 +231,7 @@ class Solver(object):
             d_loss_gp = self.gradient_penalty(out_src, x_hat)
 
             # Backward and optimize.
-            d_loss = d_loss + self.lambda_gp * d_loss_gp
+            #d_loss = d_loss + self.lambda_gp * d_loss_gp
             self.reset_grad()
             d_loss.backward()
             self.d_optimizer.step()
