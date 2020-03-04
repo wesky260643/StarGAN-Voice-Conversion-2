@@ -66,7 +66,7 @@ def convert(config):
 
     # Restore model
     print(f'Loading the trained models from step {config.resume_iters}...')
-    generator = Generator().to(device)
+    generator = Generator(config.num_speakers).to(device)
     g_path = join(config.model_save_dir, f'{config.resume_iters}-G.ckpt')
     generator.load_state_dict(torch.load(g_path, map_location=lambda storage, loc: storage))
 
