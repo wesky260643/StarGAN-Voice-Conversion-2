@@ -118,11 +118,11 @@ class ResidualBlock(nn.Module):
         self.glu = nn.GLU(dim=1)
 
     def forward(self, x, c_):
-        x = self.conv_layer(x)
-        x = self.cin(x, c_)
-        x = self.glu(x)
+        x_ = self.conv_layer(x)
+        x_ = self.cin(x_, c_)
+        x_ = self.glu(x_)
 
-        return x
+        return x + x_
 
 
 class Generator(nn.Module):
