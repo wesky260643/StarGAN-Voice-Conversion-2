@@ -274,7 +274,7 @@ class Solver(object):
                     g_loss = g_loss_fake + self.lambda_rec * g_loss_rec
 
                 # Update loss for checkpoint saving
-                if (i + 1) > 75 * (10 ** 4):  # only start saving at high enough epochs
+                if (i + 1) > 75 * (10 ** 3):  # only start saving at high enough epochs
                     # adv and reconstruction together
                     if (g_loss_fake > g_adv_optim and abs(g_loss_fake - g_rec_optim) > 0.1) and g_loss_rec < g_rec_optim:
                         G_path = os.path.join(self.model_save_dir, 'g_adv_rec_optim-G.ckpt')
