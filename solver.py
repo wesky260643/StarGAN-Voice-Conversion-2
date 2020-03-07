@@ -224,14 +224,15 @@ class Solver(object):
 
             d_loss = d_loss_real + d_loss_fake
 
+            # TODO: look to include Wassertein GP later - original paper does not include this
             # Compute loss for gradient penalty.
             alpha = torch.rand(mc_real.size(0), 1, 1, 1).to(self.device)
             x_hat = (alpha * mc_real.data + (1 - alpha) * mc_fake.data).requires_grad_(True)
             out_src = self.discriminator(x_hat, spk_c_org, spk_c_trg)
             d_loss_gp = self.gradient_penalty(out_src, x_hat)
+            # d_loss = d_loss + self.lambda_gp * d_loss_gp
 
             # Backward and optimize.
-            #d_loss = d_loss + self.lambda_gp * d_loss_gp
             self.reset_grad()
             d_loss.backward()
             self.d_optimizer.step()

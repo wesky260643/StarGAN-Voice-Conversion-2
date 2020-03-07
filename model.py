@@ -34,7 +34,7 @@ class DownsampleBlock(nn.Module):
 
     def forward(self, x):
         # GLU
-        return self.conv_layer(x) # * torch.sigmoid(self.conv_gated(x))
+        return self.conv_layer(x) * torch.sigmoid(self.conv_gated(x))
 
 
 class UpSampleBlock(nn.Module):
@@ -42,7 +42,6 @@ class UpSampleBlock(nn.Module):
     def __init__(self, dim_in, dim_out, kernel_size, stride, padding, bias):
         super(UpSampleBlock, self).__init__()
 
-        # TODO: investigate whether to ConvTranspose2d or Conv2d
         self.conv_layer = nn.Sequential(
             nn.ConvTranspose2d(in_channels=dim_in,
                                out_channels=dim_out,
@@ -69,7 +68,7 @@ class UpSampleBlock(nn.Module):
 
     def forward(self, x):
         # GLU
-        return self.conv_layer(x) # * torch.sigmoid(self.conv_gated(x))
+        return self.conv_layer(x) * torch.sigmoid(self.conv_gated(x))
 
 
 class ConditionalInstanceNormalisation(nn.Module):
@@ -256,20 +255,13 @@ class Generator(nn.Module):
                                          padding=2,
                                          bias=False)
 
+        # TODO: final layer differs from paper
         self.out = nn.Conv2d(in_channels=64,
                              out_channels=1,
                              kernel_size=(5, 15),
                              stride=(1, 1),
                              padding=(2, 7),
                              bias=False)
-
-        # TODO: final layers differ from paper
-        # self.out = nn.Conv2d(in_channels=35,
-        #                      out_channels=1,
-        #                      kernel_size=(3, 9),
-        #                      stride=(1, 1),
-        #                      padding=(1, 4),
-        #                      bias=False)
 
     def forward(self, x, c_):
         width_size = x.size(3)
@@ -298,9 +290,6 @@ class Generator(nn.Module):
         x = self.up_sample_1(x)
         x = self.up_sample_2(x)
 
-        # TODO: currently outputs w:36 h:256
-        #       Use out[:, :, :-1, :] for w:35
-        #       Would need to change initial data shape
         out = self.out(x)
 
         return out
@@ -372,8 +361,6 @@ class Discriminator(nn.Module):
         h = torch.sum(x_, dim=(2, 3))
 
         x = self.fully_connected(h)
-
-        # TODO: look into GSP layer
 
         p = self.projection(c_onehot)
 
