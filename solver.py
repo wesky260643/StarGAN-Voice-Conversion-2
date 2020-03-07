@@ -159,7 +159,6 @@ class Solver(object):
 
         # Set data loader.
         train_loader = self.train_loader
-
         data_iter = iter(train_loader)
 
         # Read a batch of testdata
@@ -180,6 +179,12 @@ class Solver(object):
             print("resuming step %d ..." % self.resume_iters)
             start_iters = self.resume_iters
             self.restore_model(self.resume_iters)
+
+        # Keep a track of loss for checkpoint saving
+        # NB: declaration based on previous trianing results
+        g_adv_optim = 0  # converges around 16
+        g_rec_optim = 1  # converges around 0
+        g_tot_optim = 0  # converges around 37
 
         # Start training.
         print('Start training...')
@@ -266,7 +271,44 @@ class Solver(object):
                              + self.lambda_rec * g_loss_rec \
                              + self.lambda_id * g_loss_id
                 else:
-                    g_loss = g_loss_fake + self.lambda_rec * g_loss_rec \
+                    g_loss = g_loss_fake + self.lambda_rec * g_loss_rec
+
+                # Update loss for checkpoint saving
+                if (i + 1) > 75 * (10 ** 4):  # only start saving at high enough epochs
+                    # adv and reconstruction together
+                    if (g_loss_fake > g_adv_optim and abs(g_loss_fake - g_rec_optim) > 0.1) and g_loss_rec < g_rec_optim:
+                        G_path = os.path.join(self.model_save_dir, 'g_adv_rec_optim-G.ckpt')
+                        D_path = os.path.join(self.model_save_dir, 'g_adv_rec_optim-D.ckpt')
+                        torch.save(self.generator.state_dict(), G_path)
+                        torch.save(self.discriminator.state_dict(), D_path)
+                        print('Saved adv+rec optimal model checkpoints into {}...'.format(self.model_save_dir))
+
+                    # adv optimal model point
+                    if g_loss_fake > g_adv_optim:
+                        g_adv_optim = g_loss_fake
+                        G_path = os.path.join(self.model_save_dir, 'g_adv_optim-G.ckpt')
+                        D_path = os.path.join(self.model_save_dir, 'g_adv_optim-D.ckpt')
+                        torch.save(self.generator.state_dict(), G_path)
+                        torch.save(self.discriminator.state_dict(), D_path)
+                        print('Saved adv optimal model checkpoints into {}...'.format(self.model_save_dir))
+
+                    # reconstruction optimal model point
+                    if g_loss_rec < g_rec_optim:
+                        g_rec_optim = g_loss_rec
+                        G_path = os.path.join(self.model_save_dir, 'g_rec_optim-G.ckpt')
+                        D_path = os.path.join(self.model_save_dir, 'g_rec_optim-D.ckpt')
+                        torch.save(self.generator.state_dict(), G_path)
+                        torch.save(self.discriminator.state_dict(), D_path)
+                        print('Saved rec optimal model checkpoints into {}...'.format(self.model_save_dir))
+
+                    # total loss optimal model point
+                    if g_loss > g_tot_optim:
+                        g_tot_optim = g_loss
+                        G_path = os.path.join(self.model_save_dir, 'g_tot_optim-G.ckpt')
+                        D_path = os.path.join(self.model_save_dir, 'g_tot_optim-D.ckpt')
+                        torch.save(self.generator.state_dict(), G_path)
+                        torch.save(self.discriminator.state_dict(), D_path)
+                        print('Saved tot optimal model checkpoints into {}...'.format(self.model_save_dir))
 
                 self.reset_grad()
                 g_loss.backward()
